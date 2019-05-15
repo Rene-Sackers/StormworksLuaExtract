@@ -26,7 +26,6 @@ namespace StormworksLuaExtract.Services
 	{
 		private static readonly string _microprocessorsPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Stormworks\data\microprocessors");
 		private static readonly string _localEditDirectory = Path.GetFullPath(@".\Workspace");
-		private static readonly Regex _luaScriptsRegex = new Regex("<(?<element>(?:object)|(?:c33)) id=\"(?<id>\\d+)\" script=[\"|'](?<script>[^>]*)['|\"]>", RegexOptions.Compiled);
 
 		private FileSystemEventArgs _lastProcessorFileEvent;
 		private DateTime _lastProcessorFileEventTime = DateTime.Now;
@@ -60,12 +59,19 @@ namespace StormworksLuaExtract.Services
 			processorsXmlWatcher.EnableRaisingEvents = true;
 
 			var workspaceLuaWatcher = new FileSystemWatcher(_localEditDirectory, "*.lua");
-			workspaceLuaWatcher.Changed += LocalLuaFileChanged; ;
+			workspaceLuaWatcher.Changed += LocalLuaFileChanged;
 			workspaceLuaWatcher.EnableRaisingEvents = true;
 
 			Console.WriteLine($"Watching directory: {_microprocessorsPath}");
 
 			Console.ReadKey();
+		}
+
+		private static string ObjectMatchPattern(string objectId = null)
+		{
+			var idMatch = objectId == null ? "\\d+" : objectId;
+
+			return "<(?<element>(?:object)|(?:c\\d)) id=\"(?<id>" + idMatch + ")\" script=[\"|'](?<script>[^>]*)['|\"]>";
 		}
 
 		private void WriteExistingMicroprocessorsScripts()
@@ -122,7 +128,7 @@ namespace StormworksLuaExtract.Services
 				yield break;
 			}
 
-			var matches = _luaScriptsRegex.Matches(xml);
+			var matches = Regex.Matches(xml, ObjectMatchPattern());
 			foreach (Match match in matches)
 			{
 				var element = match.Groups["element"].Value;
@@ -182,11 +188,17 @@ namespace StormworksLuaExtract.Services
 				return;
 			}
 
-			var targetXml = NoTouchReadFile(targetFilePath);
-			var newXml = _luaScriptsRegex.Replace(targetXml, "<${element} id=\"${id}\" script='" + newScript + "'>");
+			var currentXml = NoTouchReadFile(targetFilePath);
+			var pattern = ObjectMatchPattern(objectId);
+			var newXml = Regex.Replace(currentXml, pattern, "<${element} id=\"${id}\" script='" + newScript + "'>");
 
 			_lastWriteTime = DateTime.Now;
-			File.WriteAllText(targetFilePath.Replace(".xml", $"-{Environment.TickCount}.xml"), newXml);
+
+			// Backup
+			File.WriteAllText(targetFilePath.Replace(".xml", $" - bu{Environment.TickCount}.xml"), currentXml);
+
+			// Overwrite
+			File.WriteAllText(targetFilePath, newXml);
 		}
 
 		private string NoTouchReadFile(string path)

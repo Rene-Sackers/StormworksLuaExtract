@@ -1,20 +1,22 @@
 ﻿using Autofac;
 using StormworksLuaExtract.Services;
-using System.Threading.Tasks;
 
 namespace StormworksLuaExtract
 {
 	public class Program
 	{
-		public static async Task Main(string[] args)
+		public static void Main()
 		{
 			var builder = new ContainerBuilder();
 
 			builder.RegisterType<ApplicationService>().AsSelf();
+			builder.RegisterType<MicrocontrollersWatchService>().AsSelf();
+			builder.RegisterType<LocalLuaToXmlWriteService>().AsSelf();
+			builder.RegisterType<XmlToLocalLuaWriteService>().AsSelf();
 
 			var container = builder.Build();
 
-			await container.Resolve<ApplicationService>().Run();
+			container.Resolve<ApplicationService>().Run();
 		}
 	}
 }

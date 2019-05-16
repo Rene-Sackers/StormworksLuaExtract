@@ -2,212 +2,91 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
+using StormworksLuaExtract.Helpers;
+using StormworksLuaExtract.Models;
 
 namespace StormworksLuaExtract.Services
 {
-	public class LuaScript
-	{
-		public string ObjectId { get; }
-
-		public string Script { get; }
-
-		public LuaScript(string objectId, string script)
-		{
-			ObjectId = objectId;
-			Script = script;
-		}
-	}
-
 	public class ApplicationService
 	{
-		private static readonly string _microprocessorsPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Stormworks\data\microprocessors");
-		private static readonly string _localEditDirectory = Path.GetFullPath(@".\Workspace");
+		private readonly MicrocontrollersWatchService _microcontrollersWatchService;
+		private readonly LocalLuaToXmlWriteService _localLuaToXmlWriteService;
+		private readonly XmlToLocalLuaWriteService _xmlToLocalLuaWriteService;
+		private readonly List<LuaScript> _luaScripts = new List<LuaScript>();
 
-		private FileSystemEventArgs _lastProcessorFileEvent;
-		private DateTime _lastProcessorFileEventTime = DateTime.Now;
-
-		private FileSystemEventArgs _lastLuaFileEvent;
-		private DateTime _lastLuaFileEventTime = DateTime.Now;
-
-		private DateTime _lastWriteTime = DateTime.Now;
-
-		private const int EventGroupTimeInSeconds = 2;
-
-		public async Task Run()
+		public ApplicationService(
+			MicrocontrollersWatchService microcontrollersWatchService,
+			LocalLuaToXmlWriteService localLuaToXmlWriteService,
+			XmlToLocalLuaWriteService xmlToLocalLuaWriteService)
 		{
-			if (!Directory.Exists(_microprocessorsPath))
+			_microcontrollersWatchService = microcontrollersWatchService;
+			_localLuaToXmlWriteService = localLuaToXmlWriteService;
+			_xmlToLocalLuaWriteService = xmlToLocalLuaWriteService;
+			_microcontrollersWatchService.MicrocontrollerAdded += MicrocontrollerAdded;
+			_microcontrollersWatchService.MicrocontrollerDeleted += MicrocontrollerDeleted;
+		}
+
+		public void Run()
+		{
+			_microcontrollersWatchService.StartWatching();
+
+			if (!Directory.Exists(Statics.MicrocontrollerPath))
 			{
-				Console.WriteLine($"Could not find microprocessors folder: {_microprocessorsPath}");
+				Console.WriteLine($"Could not find microcontroller folder: {Statics.MicrocontrollerPath}");
 				Console.ReadKey();
 				return;
 			}
 
-			if (!Directory.Exists(_localEditDirectory))
-				Directory.CreateDirectory(_localEditDirectory);
+			if (!Directory.Exists(Statics.LocalEditDirectory))
+				Directory.CreateDirectory(Statics.LocalEditDirectory);
 
-			WriteExistingMicroprocessorsScripts();
+			if (!Directory.Exists(Statics.LocalBackupDirectory))
+				Directory.CreateDirectory(Statics.LocalBackupDirectory);
+			
+			WriteExistingMicrocontrollerScripts();
 
-			var processorsXmlWatcher = new FileSystemWatcher(_microprocessorsPath, "*.xml");
-			processorsXmlWatcher.Created += MicroprocessorXmlFileChanged;
-			processorsXmlWatcher.Changed += MicroprocessorXmlFileChanged;
-			processorsXmlWatcher.Renamed += MicroprocessorXmlFileChanged;
-			processorsXmlWatcher.Deleted += MicroprocessorXmlFileChanged;
-			processorsXmlWatcher.EnableRaisingEvents = true;
-
-			var workspaceLuaWatcher = new FileSystemWatcher(_localEditDirectory, "*.lua");
+			var workspaceLuaWatcher = new BufferedFileSystemWatcher(Statics.LocalEditDirectory, "*.lua");
 			workspaceLuaWatcher.Changed += LocalLuaFileChanged;
-			workspaceLuaWatcher.EnableRaisingEvents = true;
 
-			Console.WriteLine($"Watching directory: {_microprocessorsPath}");
+			Console.WriteLine($"Watching directory: {Statics.MicrocontrollerPath}");
 
 			Console.ReadKey();
 		}
 
-		private static string ObjectMatchPattern(string objectId = null)
+		private void WriteExistingMicrocontrollerScripts()
 		{
-			var idMatch = objectId == null ? "\\d+" : objectId;
-
-			return "<(?<element>(?:object)|(?:c\\d)) id=\"(?<id>" + idMatch + ")\" script=[\"|'](?<script>[^>]*)['|\"]>";
+			foreach (var xmlFilePath in Directory.GetFiles(Statics.MicrocontrollerPath, "*.xml"))
+				AddMicrocontrollerXmlFile(xmlFilePath);
 		}
 
-		private void WriteExistingMicroprocessorsScripts()
+		private void MicrocontrollerAdded(string xmlfilepath) =>
+			AddMicrocontrollerXmlFile(xmlfilepath);
+
+		private void MicrocontrollerDeleted(string xmlfilepath) =>
+			_luaScripts.Where(s => s.MicrocontrollerXmlPath == xmlfilepath).ToList().ForEach(s => _luaScripts.Remove(s));
+		
+		private void AddMicrocontrollerXmlFile(string xmlFilePath)
 		{
-			foreach (var xmlFilePath in Directory.GetFiles(_microprocessorsPath, "*.xml"))
-				WriteProcessorLuaScriptsToFiles(xmlFilePath);
-		}
-
-		private void MicroprocessorXmlFileChanged(object sender, FileSystemEventArgs e)
-		{
-			if (_lastProcessorFileEvent?.FullPath == e.FullPath && DateTime.Now.Subtract(_lastProcessorFileEventTime).TotalSeconds <= EventGroupTimeInSeconds)
-				return;
-
-			if (DateTime.Now.Subtract(_lastWriteTime).TotalSeconds <= EventGroupTimeInSeconds)
-				return;
-
-			_lastProcessorFileEvent = e;
-			_lastProcessorFileEventTime = DateTime.Now;
-
-			Console.WriteLine($"XML file changed: {e.Name} - {e.ChangeType}");
-
-			if (e.ChangeType == WatcherChangeTypes.Deleted)
-				return;
-
-			WriteProcessorLuaScriptsToFiles(e.FullPath);
-		}
-
-		private void WriteProcessorLuaScriptsToFiles(string xmlFilePath)
-		{
-			var fileName = new FileInfo(xmlFilePath).Name;
-
-			foreach (var script in ExtractLuaFromMicroprocessorXml(xmlFilePath))
+			var xmlFileScripts = ScriptExtractHelper.ExtractScriptsFromMicrocontrollerXml(xmlFilePath);
+			foreach (var script in xmlFileScripts)
 			{
-				var targetFile = Path.Combine(_localEditDirectory, fileName.Replace(".xml", $"_{script.ObjectId}.lua"));
-				if (File.Exists(targetFile) && NoTouchReadFile(targetFile) == script.Script)
-					continue;
-
-				Console.WriteLine($"Processor '{fileName}' object {script.ObjectId} script changed.");
-
-				_lastWriteTime = DateTime.Now;
-				File.WriteAllText(targetFile, script.Script);
+				_luaScripts.Add(script);
+				_xmlToLocalLuaWriteService.WriteMicrocontrollerLuaScriptsToFiles(script);
 			}
 		}
 
-		private IEnumerable<LuaScript> ExtractLuaFromMicroprocessorXml(string xmlFilePath)
+		private async void LocalLuaFileChanged(object sender, FileSystemEventArgs e)
 		{
-			string xml;
-			try
-			{
-				xml = NoTouchReadFile(xmlFilePath);
-			}
-			catch
-			{
-				yield break;
-			}
-
-			var matches = Regex.Matches(xml, ObjectMatchPattern());
-			foreach (Match match in matches)
-			{
-				var element = match.Groups["element"].Value;
-
-				// The script is printed twice in the XML, once under a <object item, and once under a <c33 item
-				if (element != "object")
-					continue;
-
-				var objectId = match.Groups["id"].Value;
-				var script = match.Groups["script"].Value;
-				script = System.Net.WebUtility.HtmlDecode(script);
-
-				yield return new LuaScript(objectId, script);
-			}
-		}
-
-		private void LocalLuaFileChanged(object sender, FileSystemEventArgs e)
-		{
-			if (_lastLuaFileEvent?.FullPath == e.FullPath && DateTime.Now.Subtract(_lastLuaFileEventTime).TotalSeconds <= EventGroupTimeInSeconds)
+			var luaScript = _luaScripts.FirstOrDefault(ls => ls.LuaFilePath == e.FullPath);
+			if (luaScript == null)
 				return;
 
-			if (DateTime.Now.Subtract(_lastWriteTime).TotalSeconds <= EventGroupTimeInSeconds)
-				return;
+			await Task.Delay(Constants.ReadWriteTimeoutInMilliseconds);
 
-			_lastLuaFileEvent = e;
-			_lastLuaFileEventTime = DateTime.Now;
+			Console.WriteLine($"Lua file '{e.Name}' changed.");
 
-			WriteUpdatedLua(e.FullPath);
-		}
-
-		private void WriteUpdatedLua(string luaFilePath)
-		{
-			var fileName = new FileInfo(luaFilePath).Name;
-			var objectId = fileName.Split('_').Last().Replace(".lua", string.Empty);
-			var processorXmlFileName = fileName.Replace($"_{objectId}.lua", ".xml");
-			var targetFilePath = Path.Combine(_microprocessorsPath, processorXmlFileName);
-
-			Thread.Sleep(1000);
-
-			Console.WriteLine($"Local lua file '{fileName}' component ID {objectId} script changed.");
-
-			if (!File.Exists(targetFilePath))
-			{
-				Console.WriteLine($"Target microprocessor file '{targetFilePath}' not found.");
-				return;
-			}
-
-			var newScript = NoTouchReadFile(luaFilePath);
-			newScript = System.Net.WebUtility.HtmlEncode(newScript);
-
-			var currentScripts = ExtractLuaFromMicroprocessorXml(targetFilePath);
-			var currentScript = currentScripts.FirstOrDefault(s => s.ObjectId == objectId);
-
-			if (currentScript == null)
-			{
-				Console.WriteLine($"Failed to find the Lua object with ID {objectId} in microprocessor file '{targetFilePath}'. Couldn't update.");
-				return;
-			}
-
-			var currentXml = NoTouchReadFile(targetFilePath);
-			var pattern = ObjectMatchPattern(objectId);
-			var newXml = Regex.Replace(currentXml, pattern, "<${element} id=\"${id}\" script='" + newScript + "'>");
-
-			_lastWriteTime = DateTime.Now;
-
-			// Backup
-			File.WriteAllText(targetFilePath.Replace(".xml", $" - bu{Environment.TickCount}.xml"), currentXml);
-
-			// Overwrite
-			File.WriteAllText(targetFilePath, newXml);
-		}
-
-		private string NoTouchReadFile(string path)
-		{
-			using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-			using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-			{
-				return streamReader.ReadToEnd();
-			}
+			_localLuaToXmlWriteService.WriteScriptToMicrocontroller(luaScript);
 		}
 	}
 }

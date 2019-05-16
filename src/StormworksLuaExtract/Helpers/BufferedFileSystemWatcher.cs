@@ -21,7 +21,10 @@ namespace StormworksLuaExtract.Helpers
 		public BufferedFileSystemWatcher(string path, string filter, int bufferTimeInMilliseconds = DefaultBUfferTime)
 		{
 			_watcher = new FileSystemWatcher(path, filter);
+			_watcher.Changed += WatcherEvent;
 			_watcher.Created += WatcherEvent;
+			_watcher.Deleted += WatcherEvent;
+			_watcher.Renamed += WatcherEvent;
 			_bufferTimeInMilliseconds = bufferTimeInMilliseconds;
 			_watcher.EnableRaisingEvents = true;
 		}
@@ -29,7 +32,10 @@ namespace StormworksLuaExtract.Helpers
 		public BufferedFileSystemWatcher(string path, int bufferTimeInMilliseconds = DefaultBUfferTime)
 		{
 			_watcher = new FileSystemWatcher(path);
+			_watcher.Changed += WatcherEvent;
 			_watcher.Created += WatcherEvent;
+			_watcher.Deleted += WatcherEvent;
+			_watcher.Renamed += WatcherEvent;
 			_bufferTimeInMilliseconds = bufferTimeInMilliseconds;
 			_watcher.EnableRaisingEvents = true;
 		}

@@ -44,7 +44,7 @@ namespace StormworksLuaExtract.Services
 			var currentXml = FileHelper.NoTouchReadFile(luaScript.MicrocontrollerXmlPath);
 
 			// Backup
-			var backupFilePath = Path.Join(Statics.LocalBackupDirectory, luaScript.MicrocontrollerName + $"{DateTime.Now:G}.xml");
+			var backupFilePath = Path.Join(Statics.LocalBackupDirectory, luaScript.MicrocontrollerName + $" {DateTime.Now:yyyy-MM-dd HH-mm-ss}.xml");
 			FileHelper.TryWriteFile(backupFilePath, currentXml);
 			Console.WriteLine($"Wrote backup to {backupFilePath}");
 

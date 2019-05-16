@@ -1,6 +1,10 @@
+[![Build Status](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract.svg?branch=master)](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract)
+
 This application allows you to edit the Stormworks microcontroller Lua objects in an external editor by extracting the scripts, and creating separate .lua files.
 
 When you change a .lua file, it'll then back-up your microcontroller .xml file and overwrite it with the updated script content.
+
+![Screenshot](https://i.imgur.com/UrL2lY3.gif)
 
 ## Warning
 Still in beta, in the worst case, it may corrupt or delete a saved microcontroller.

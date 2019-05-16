@@ -1,0 +1,23 @@
+
+dist: bionic
+language: csharp
+mono: none
+dotnet: 2.2.105
+
+script:
+  - dotnet restore src/StormworksLuaExtract.sln
+  - dotnet publish src/StormworksLuaExtract.sln -c Release -r win-x64 --self-contained true
+  - zip -r -j "StormworksLuaExtract.zip" ./src/StormworksLuaExtract/bin/Release/netcoreapp2.2/win-x64/publish/
+
+branches:
+  only:
+  - master
+  - /^v.*$/
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key: $GITHUB_TOKEN
+  file: ./StormworksLuaExtract.zip
+  on:
+    tags: true

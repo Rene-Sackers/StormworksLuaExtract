@@ -39,7 +39,7 @@ namespace StormworksLuaExtract.Helpers
 
 		private static string GetLuaFilePath(string xmlFilePath, string scriptObjectId)
 		{
-			var fileName = xmlFilePath.Split(Path.PathSeparator).Last();
+			var fileName = xmlFilePath.Split(Path.DirectorySeparatorChar).Last();
 			return Path.Combine(Statics.LocalEditDirectory, fileName.Replace(".xml", $"_{scriptObjectId}.lua"));
 		}
 	}

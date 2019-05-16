@@ -22,7 +22,7 @@ namespace StormworksLuaExtract.Models
 			ObjectId = objectId;
 			Script = script;
 
-			MicrocontrollerName = MicrocontrollerXmlPath.Split(Path.PathSeparator).Last().Replace(".xml", string.Empty);
+			MicrocontrollerName = MicrocontrollerXmlPath.Split(Path.DirectorySeparatorChar).Last().Replace(".xml", string.Empty);
 		}
 	}
 }

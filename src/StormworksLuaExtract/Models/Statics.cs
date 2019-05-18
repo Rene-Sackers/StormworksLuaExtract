@@ -5,7 +5,7 @@ namespace StormworksLuaExtract.Models
 {
 	public static class Statics
 	{
-		public static readonly string MicrocontrollerPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Stormworks\data\vehicles");
+		public static readonly string MicrocontrollerPath = @"C:\Users\renes\Desktop\Test";//Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Stormworks\data\vehicles");
 		public static readonly string LocalEditDirectory = Path.GetFullPath(@".\Workspace");
 		public static readonly string LocalBackupDirectory = Path.GetFullPath(@".\Backup");
 

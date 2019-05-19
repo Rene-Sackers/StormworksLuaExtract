@@ -10,7 +10,7 @@ namespace StormworksLuaExtract
 			var builder = new ContainerBuilder();
 
 			builder.RegisterType<ApplicationService>().AsSelf();
-			builder.RegisterType<MicrocontrollersWatchService>().AsSelf();
+			builder.RegisterType<VehiclesWatchService>().AsSelf();
 			builder.RegisterType<LocalLuaToXmlWriteService>().AsSelf();
 			builder.RegisterType<XmlToLocalLuaWriteService>().AsSelf();
 

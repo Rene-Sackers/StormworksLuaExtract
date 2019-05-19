@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using StormworksLuaExtract.Helpers;
@@ -14,9 +13,9 @@ namespace StormworksLuaExtract.Services
 		{
 			Console.WriteLine($"Local lua file '{luaScript.LuaFilePath}' object ID {luaScript.ObjectId} script changed.");
 
-			if (!File.Exists(luaScript.MicrocontrollerXmlPath))
+			if (!File.Exists(luaScript.VehicleXmlPath))
 			{
-				Console.WriteLine($"Target microprocessor file '{luaScript.MicrocontrollerXmlPath}' not found.");
+				Console.WriteLine($"Target vehicle file '{luaScript.VehicleXmlPath}' not found.");
 				return;
 			}
 
@@ -26,38 +25,33 @@ namespace StormworksLuaExtract.Services
 
 			newScript = WebUtility.HtmlEncode(newScript);
 
-			var currentScripts = ScriptExtractHelper.ExtractScriptsFromMicrocontrollerXml(luaScript.MicrocontrollerXmlPath).ToList();
-			var currentScript = currentScripts.FirstOrDefault(s => s.ObjectId == luaScript.ObjectId);
-
+			var currentScript = ScriptExtractHelper.GetScriptFromXmlFile(luaScript.VehicleXmlPath, luaScript.ObjectId);
 			if (currentScript == null)
 			{
-				Console.WriteLine($"Failed to find the Lua object with ID {luaScript.ObjectId} in microprocessor file '{luaScript.MicrocontrollerXmlPath}'.");
+				Console.WriteLine($"Failed to find the Lua object with ID {luaScript.ObjectId} in vehicle file '{luaScript.VehicleXmlPath}'.");
 				return;
 			}
 
-			if (currentScript.Script == newScript)
+			if (currentScript == newScript)
 			{
-				Console.WriteLine($"Script {luaScript.ObjectId} hasn't changed compared to the microcontroller XML.");
+				Console.WriteLine($"Script {luaScript.ObjectId} hasn't changed compared to the vehicle XML.");
 				return;
 			}
 
-			var currentXml = FileHelper.NoTouchReadFile(luaScript.MicrocontrollerXmlPath);
+			var currentXml = FileHelper.NoTouchReadFile(luaScript.VehicleXmlPath);
 
 			// Backup
-			var backupFilePath = Path.Join(Statics.LocalBackupDirectory, $"{luaScript.MicrocontrollerName} {DateTime.Now:yyyy-MM-dd HH-mm-ss}.xml");
-			if (!FileHelper.TryWriteFile(backupFilePath, currentXml))
+			if (!BackupFileHelper.BackupFile(currentXml, luaScript.VehicleName))
 				return;
-
-			Console.WriteLine($"Wrote backup to {backupFilePath}");
 
 			var pattern = Statics.ObjectMatchPattern(luaScript.ObjectId);
-			var newXml = Regex.Replace(currentXml, pattern, "<${element} id=\"${id}\" script='" + newScript + "'>");
+			var newXml = Regex.Replace(currentXml, pattern, "<object id=\"${id}\" script='" + newScript + "'>");
 
 			// Overwrite
-			if (!FileHelper.TryWriteFile(luaScript.MicrocontrollerXmlPath, newXml))
+			if (!FileHelper.TryWriteFile(luaScript.VehicleXmlPath, newXml))
 				return;
 
-			Console.WriteLine($"Updated microcontroller {luaScript.MicrocontrollerName} XML with new script with ID {luaScript.ObjectId}.");
+			Console.WriteLine($"Updated vehicle {luaScript.VehicleName} XML with new script with ID {luaScript.ObjectId}.");
 		}
 	}
 }

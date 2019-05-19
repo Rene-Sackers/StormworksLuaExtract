@@ -5,24 +5,21 @@ namespace StormworksLuaExtract.Models
 {
 	public class LuaScript
 	{
-		public string MicrocontrollerXmlPath { get; }
+		public string VehicleXmlPath { get; }
+
+		public string VehicleName => Path.GetFileNameWithoutExtension(VehicleXmlPath);
 
 		public string LuaFilePath { get; }
 
+		public string LuaFileName => Path.GetFileName(LuaFilePath);
+
 		public string ObjectId { get; }
 
-		public string Script { get; }
-
-		public string MicrocontrollerName { get; }
-
-		public LuaScript(string microcontrollerXmlPath, string luaFilePath, string objectId, string script)
+		public LuaScript(string vehicleXmlPath, string luaFilePath, string objectId)
 		{
-			MicrocontrollerXmlPath = microcontrollerXmlPath;
+			VehicleXmlPath = vehicleXmlPath;
 			LuaFilePath = luaFilePath;
 			ObjectId = objectId;
-			Script = script;
-
-			MicrocontrollerName = MicrocontrollerXmlPath.Split(Path.DirectorySeparatorChar).Last().Replace(".xml", string.Empty);
 		}
 	}
 }

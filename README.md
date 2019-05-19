@@ -1,10 +1,9 @@
+YouTube:  
 [![YouTube Video](https://img.youtube.com/vi/9sFofudtIb0/0.jpg)](https://www.youtube.com/watch?v=9sFofudtIb0)
 
 This application extracts the lua scripts from all vehicles' microcontrollers, and puts them into .lua files on your disk.
 
 When you edit these .lua files, they are automatically written back into the vehicle's save file. This allows you to edit and test your scripts more quickly.
-
-![Screenshot](https://i.imgur.com/UrL2lY3.gif)
 
 ## Warning
 Still in beta, in the worst case, it may corrupt or delete a saved vehicle.

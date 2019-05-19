@@ -14,6 +14,7 @@ namespace StormworksLuaExtract.Services
 		private readonly LocalLuaToXmlWriteService _localLuaToXmlWriteService;
 		private readonly XmlToLocalLuaWriteService _xmlToLocalLuaWriteService;
 		private readonly List<LuaScript> _luaScripts = new List<LuaScript>();
+		private readonly List<string> _ignoreNextLuaUpdatePaths = new List<string>();
 
 		private string _ignoreNextVehicleUpdatePath;
 
@@ -60,11 +61,14 @@ namespace StormworksLuaExtract.Services
 		private void WriteExistingMicrocontrollerScripts()
 		{
 			foreach (var xmlFilePath in Directory.GetFiles(Statics.MicrocontrollerPath, "*.xml"))
-				AddMicrocontrollerXmlFile(xmlFilePath);
+				AddVehicleXmlFile(xmlFilePath);
 		}
 
 		private void VehicleAdded(string xmlfilepath) =>
-			AddMicrocontrollerXmlFile(xmlfilepath);
+			AddVehicleXmlFile(xmlfilepath);
+
+		private void VehicleDeleted(string xmlfilepath) =>
+			_luaScripts.Where(s => s.VehicleXmlPath == xmlfilepath).ToList().ForEach(s => _luaScripts.Remove(s));
 
 		private void VehicleChanged(string xmlfilepath)
 		{
@@ -74,16 +78,39 @@ namespace StormworksLuaExtract.Services
 				return;
 			}
 
-			_luaScripts.Where(s => s.VehicleXmlPath == xmlfilepath).ToList().ForEach(s => _xmlToLocalLuaWriteService.WriteVehicleLuaScriptToFile(s));
-		}
+			var savedVehicleScripts = ScriptExtractHelper.ExtractScriptsFromMicrocontrollerXml(xmlfilepath).ToList();
 
-		private void VehicleDeleted(string xmlfilepath) =>
-			_luaScripts.Where(s => s.VehicleXmlPath == xmlfilepath).ToList().ForEach(s => _luaScripts.Remove(s));
+			var previouslyExtractedScripts = _luaScripts.Where(ls => ls.VehicleXmlPath == xmlfilepath).ToList();
+			var newScripts = savedVehicleScripts.Where(vs => previouslyExtractedScripts.All(nvs => nvs.ObjectId != vs.ObjectId));
+			var deletedScripts = previouslyExtractedScripts.Where(vs => savedVehicleScripts.All(nvs => nvs.ObjectId != vs.ObjectId)).ToList();
+
+			foreach (var newScript in newScripts)
+			{
+				_luaScripts.Add(newScript);
+				_ignoreNextLuaUpdatePaths.Add(newScript.LuaFilePath);
+				_xmlToLocalLuaWriteService.WriteVehicleLuaScriptToFile(newScript);
+			}
+
+			foreach (var deletedScript in deletedScripts)
+			{
+				_luaScripts.Remove(deletedScript);
+				var deletedScriptContent = FileHelper.NoTouchReadFile(deletedScript.LuaFilePath);
+				if (BackupFileHelper.BackupFile(deletedScriptContent, deletedScript.LuaFileName))
+					File.Delete(deletedScript.LuaFilePath);
+			}
+
+			foreach (var existingScript in previouslyExtractedScripts.Except(deletedScripts))
+			{
+				_ignoreNextLuaUpdatePaths.Add(existingScript.LuaFilePath);
+				if (!_xmlToLocalLuaWriteService.WriteVehicleLuaScriptToFile(existingScript))
+					_ignoreNextLuaUpdatePaths.Remove(existingScript.LuaFilePath);
+			}
+		}
 		
-		private void AddMicrocontrollerXmlFile(string xmlFilePath)
+		private void AddVehicleXmlFile(string xmlFilePath)
 		{
-			var xmlFileScripts = ScriptExtractHelper.ExtractScriptsFromMicrocontrollerXml(xmlFilePath);
-			foreach (var script in xmlFileScripts)
+			var luaScripts = ScriptExtractHelper.ExtractScriptsFromMicrocontrollerXml(xmlFilePath);
+			foreach (var script in luaScripts)
 			{
 				_luaScripts.Add(script);
 				_xmlToLocalLuaWriteService.WriteVehicleLuaScriptToFile(script);
@@ -92,6 +119,12 @@ namespace StormworksLuaExtract.Services
 
 		private async void LocalLuaFileChanged(object sender, FileSystemEventArgs e)
 		{
+			if (_ignoreNextLuaUpdatePaths.Contains(e.FullPath))
+			{
+				_ignoreNextLuaUpdatePaths.Remove(e.FullPath);
+				return;
+			}
+
 			var luaScript = _luaScripts.FirstOrDefault(ls => ls.LuaFilePath == e.FullPath);
 			if (luaScript == null)
 				return;

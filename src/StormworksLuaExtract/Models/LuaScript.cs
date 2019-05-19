@@ -7,19 +7,19 @@ namespace StormworksLuaExtract.Models
 	{
 		public string VehicleXmlPath { get; }
 
+		public string VehicleName => Path.GetFileNameWithoutExtension(VehicleXmlPath);
+
 		public string LuaFilePath { get; }
 
-		public string ObjectId { get; }
+		public string LuaFileName => Path.GetFileName(LuaFilePath);
 
-		public string VehicleName { get; }
+		public string ObjectId { get; }
 
 		public LuaScript(string vehicleXmlPath, string luaFilePath, string objectId)
 		{
 			VehicleXmlPath = vehicleXmlPath;
 			LuaFilePath = luaFilePath;
 			ObjectId = objectId;
-
-			VehicleName = VehicleXmlPath.Split(Path.DirectorySeparatorChar).Last().Replace(".xml", string.Empty);
 		}
 	}
 }

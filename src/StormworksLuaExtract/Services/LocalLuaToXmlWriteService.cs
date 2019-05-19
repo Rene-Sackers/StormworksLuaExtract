@@ -41,14 +41,11 @@ namespace StormworksLuaExtract.Services
 			var currentXml = FileHelper.NoTouchReadFile(luaScript.VehicleXmlPath);
 
 			// Backup
-			var backupFilePath = Path.Join(Statics.LocalBackupDirectory, $"{luaScript.VehicleName} {DateTime.Now:yyyy-MM-dd HH-mm-ss}.xml");
-			if (!FileHelper.TryWriteFile(backupFilePath, currentXml))
+			if (!BackupFileHelper.BackupFile(currentXml, luaScript.VehicleName))
 				return;
 
-			Console.WriteLine($"Wrote backup to {backupFilePath}");
-
 			var pattern = Statics.ObjectMatchPattern(luaScript.ObjectId);
-			var newXml = Regex.Replace(currentXml, pattern, "<${element} id=\"${id}\" script='" + newScript + "'>");
+			var newXml = Regex.Replace(currentXml, pattern, "<object id=\"${id}\" script='" + newScript + "'>");
 
 			// Overwrite
 			if (!FileHelper.TryWriteFile(luaScript.VehicleXmlPath, newXml))

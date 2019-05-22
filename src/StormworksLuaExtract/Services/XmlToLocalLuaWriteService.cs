@@ -9,7 +9,7 @@ namespace StormworksLuaExtract.Services
 	{
 		public bool WriteVehicleLuaScriptToFile(LuaScript luaScript)
 		{
-			Console.WriteLine($"Extracting Lua scripts from vehicle '{luaScript.VehicleXmlPath}'");
+			Console.WriteLine($"Extracting Lua scripts from vehicle '{luaScript.VehicleName}'");
 
 			var vehicleXmlScript = ScriptExtractHelper.GetScriptFromXmlFile(luaScript.VehicleXmlPath, luaScript.ObjectId);
 
@@ -30,7 +30,7 @@ namespace StormworksLuaExtract.Services
 			
 			FileHelper.TryWriteFile(luaScript.LuaFilePath, vehicleXmlScript);
 
-			Console.WriteLine($"Wrote script {luaScript.ObjectId} from vehicle {luaScript.VehicleName} to {luaScript.LuaFilePath}.");
+			Console.WriteLine($"Wrote script {luaScript.ObjectId} from vehicle {luaScript.VehicleName} to {luaScript.LuaFileName}.");
 
 			return true;
 		}

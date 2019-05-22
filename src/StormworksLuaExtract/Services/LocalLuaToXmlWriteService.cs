@@ -9,9 +9,11 @@ namespace StormworksLuaExtract.Services
 {
 	public class LocalLuaToXmlWriteService
 	{
+		private const int LuaMaximumLength = 4096;
+
 		public void WriteScriptToMicrocontroller(LuaScript luaScript)
 		{
-			Console.WriteLine($"Local lua file '{luaScript.LuaFilePath}' object ID {luaScript.ObjectId} script changed.");
+			Console.WriteLine($"Local lua file '{luaScript.LuaFileName}' object ID {luaScript.ObjectId} script changed.");
 
 			if (!File.Exists(luaScript.VehicleXmlPath))
 			{
@@ -24,6 +26,15 @@ namespace StormworksLuaExtract.Services
 				return;
 
 			newScript = WebUtility.HtmlEncode(newScript);
+
+
+			if (newScript.Length > LuaMaximumLength)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"Warning! Script is too long: {newScript.Length}/{LuaMaximumLength}, not updating vehicle file.");
+				Console.ForegroundColor = ConsoleColor.Gray;
+				return;
+			}
 
 			var currentScript = ScriptExtractHelper.GetScriptFromXmlFile(luaScript.VehicleXmlPath, luaScript.ObjectId);
 			if (currentScript == null)

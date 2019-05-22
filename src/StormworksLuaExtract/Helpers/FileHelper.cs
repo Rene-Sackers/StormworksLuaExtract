@@ -14,9 +14,9 @@ namespace StormworksLuaExtract.Helpers
 				using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
 					return streamReader.ReadToEnd();
 			}
-			catch
+			catch (Exception e)
 			{
-				Console.WriteLine($"Failed to read file '{path}'");
+				Console.WriteLine($"Failed to read file '{path}' - {e.Message}");
 			}
 
 			return null;
@@ -35,5 +35,8 @@ namespace StormworksLuaExtract.Helpers
 				return false;
 			}
 		}
+
+		public static string SanitizeFileName(string fileName) =>
+			string.Concat(fileName.Split(Path.GetInvalidFileNameChars()));
 	}
 }

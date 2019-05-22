@@ -21,12 +21,18 @@ namespace StormworksLuaExtract.Helpers
 				yield break;
 			}
 
-			var matches = Regex.Matches(xml, Statics.ObjectMatchPattern());
-			foreach (Match match in matches)
+			foreach (Match microcontrollerMatch in Statics.MicrocontrollerRegex.Matches(xml))
 			{
-				var objectId = match.Groups["id"].Value;
+				var microcontrollerXml = microcontrollerMatch.Groups[0].Value;
+				var microcontrollerName = WebUtility.HtmlDecode(microcontrollerMatch.Groups["name"].Value);
+				
+				foreach (Match scriptComponentMatch in Regex.Matches(microcontrollerXml, Statics.ObjectMatchPattern(), RegexOptions.Singleline))
+				{
+					var objectId = scriptComponentMatch.Groups["id"].Value;
 
-				yield return new LuaScript(microcontrollerXmlFilePath, GetLuaFilePath(microcontrollerXmlFilePath, objectId), objectId);
+					var luaFilePath = GetLuaFilePath(microcontrollerXmlFilePath, microcontrollerName, objectId);
+					yield return new LuaScript(microcontrollerName, microcontrollerXmlFilePath, luaFilePath, objectId);
+				}
 			}
 		}
 
@@ -48,10 +54,13 @@ namespace StormworksLuaExtract.Helpers
 			return WebUtility.HtmlDecode(script);
 		}
 
-		private static string GetLuaFilePath(string xmlFilePath, string scriptObjectId)
+		private static string GetLuaFilePath(string vehicleXmlFilePath, string microcontrollerName, string scriptObjectId)
 		{
-			var fileName = xmlFilePath.Split(Path.DirectorySeparatorChar).Last();
-			return Path.Combine(Statics.LocalEditDirectory, fileName.Replace(".xml", $"_{scriptObjectId}.lua"));
+			var fileName = vehicleXmlFilePath.Split(Path.DirectorySeparatorChar).Last();
+			fileName = fileName.Replace(".xml", $"_{microcontrollerName}_{scriptObjectId}.lua");
+			fileName = FileHelper.SanitizeFileName(fileName);
+
+			return Path.Combine(Statics.LocalEditDirectory, fileName);
 		}
 	}
 }

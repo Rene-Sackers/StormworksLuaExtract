@@ -13,7 +13,7 @@ namespace StormworksLuaExtract.Helpers
 			var success = FileHelper.TryWriteFile(backupFilePath, originalContent);
 
 			if (success)
-				Console.WriteLine($"Wrote backup to {backupFilePath}");
+				Console.WriteLine($"Wrote backup to Backup\\{Path.GetFileName(backupFilePath)}");
 
 			return success;
 		}

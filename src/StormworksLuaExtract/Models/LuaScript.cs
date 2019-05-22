@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 
 namespace StormworksLuaExtract.Models
 {
@@ -9,14 +8,17 @@ namespace StormworksLuaExtract.Models
 
 		public string VehicleName => Path.GetFileNameWithoutExtension(VehicleXmlPath);
 
+		public string MicrocontrollerName { get; }
+
 		public string LuaFilePath { get; }
 
 		public string LuaFileName => Path.GetFileName(LuaFilePath);
 
 		public string ObjectId { get; }
 
-		public LuaScript(string vehicleXmlPath, string luaFilePath, string objectId)
+		public LuaScript(string microcontrollerName, string vehicleXmlPath, string luaFilePath, string objectId)
 		{
+			MicrocontrollerName = microcontrollerName;
 			VehicleXmlPath = vehicleXmlPath;
 			LuaFilePath = luaFilePath;
 			ObjectId = objectId;

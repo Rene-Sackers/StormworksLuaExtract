@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract.svg?branch=master)](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract)
+
 YouTube:  
 [![YouTube Video](https://img.youtube.com/vi/9sFofudtIb0/0.jpg)](https://www.youtube.com/watch?v=9sFofudtIb0)
 

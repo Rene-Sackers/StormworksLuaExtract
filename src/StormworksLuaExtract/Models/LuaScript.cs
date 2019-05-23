@@ -14,6 +14,10 @@ namespace StormworksLuaExtract.Models
 
 		public string LuaFileName => Path.GetFileName(LuaFilePath);
 
+		public string MinifiedLuaPath { get; }
+
+		public string MinifiedLuaFileName => Path.GetFileName(MinifiedLuaPath);
+
 		public string ObjectId { get; }
 
 		public LuaScript(string microcontrollerName, string vehicleXmlPath, string luaFilePath, string objectId)
@@ -22,6 +26,7 @@ namespace StormworksLuaExtract.Models
 			VehicleXmlPath = vehicleXmlPath;
 			LuaFilePath = luaFilePath;
 			ObjectId = objectId;
+			MinifiedLuaPath = luaFilePath.Replace(".lua", ".min.lua");
 		}
 	}
 }

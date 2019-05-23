@@ -95,8 +95,11 @@ namespace StormworksLuaExtract.Services
 			{
 				_luaScripts.Remove(deletedScript);
 				var deletedScriptContent = FileHelper.NoTouchReadFile(deletedScript.LuaFilePath);
-				if (BackupFileHelper.BackupFile(deletedScriptContent, deletedScript.LuaFileName))
-					File.Delete(deletedScript.LuaFilePath);
+				if (!BackupFileHelper.BackupFile(deletedScriptContent, deletedScript.LuaFileName))
+					continue;
+
+				File.Delete(deletedScript.LuaFilePath);
+				File.Delete(deletedScript.MinifiedLuaPath);
 			}
 
 			foreach (var existingScript in previouslyExtractedScripts.Except(deletedScripts))

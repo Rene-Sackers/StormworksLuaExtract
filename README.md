@@ -1,4 +1,14 @@
-[![Build Status](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract.svg?branch=master)](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract)
+# Stormworks Lua Extract
+
+## Features
+
+* Automatically extracts all Lua scripts from all controllers on **saved** vehicles.
+* Writes Lua scripts to local .lua files that you can edit in your favorite editor outside the game.
+* Automatically updates vehicle save files for rapid prototyping.
+* Automatically adds/removes scripts as they're added/deleted from vehicles in-game. <sup>once you save the vehicle</sup>
+* Automatically **minifies** the Lua code if it's larger than the maximum amount of allowed characters. Typically it can cut down a 6000 character script to about 2000.
+	* This allows you to freely write longer variable names and comments.  
+	All comments are removed from the final script.
 
 YouTube:  
 [![YouTube Video](https://img.youtube.com/vi/9sFofudtIb0/0.jpg)](https://www.youtube.com/watch?v=9sFofudtIb0)
@@ -23,3 +33,5 @@ You can start editing these files, when you save, it should automatically update
 In game, you'll have to re-load the vehicle in the editor to load its new script.
 
 As of v0.0.3, any changes you make in the editor are also reflected to the local .lua files. This includes adding, deleting and modifying Lua scripts.
+
+[![Build Status](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract.svg?branch=master)](https://travis-ci.com/Rene-Sackers/StormworksLuaExtract)

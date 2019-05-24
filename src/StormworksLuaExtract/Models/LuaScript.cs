@@ -6,6 +6,8 @@ namespace StormworksLuaExtract.Models
 	{
 		public string VehicleXmlPath { get; }
 
+		public string VehicleXmlFileName => Path.GetFileName(VehicleXmlPath);
+
 		public string VehicleName => Path.GetFileNameWithoutExtension(VehicleXmlPath);
 
 		public string MicrocontrollerName { get; }

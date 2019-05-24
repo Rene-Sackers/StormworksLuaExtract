@@ -8,6 +8,6 @@
 
 		public const int LuaMaximumLength = 4096;
 
-		public const string MinifyLuaApiEndpoint = "http://127.0.0.1:8080";
+		public const string MinifyLuaApiEndpoint = "https://minify-lua-api.azurewebsites.net/";
 	}
 }

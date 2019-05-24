@@ -50,7 +50,7 @@ namespace StormworksLuaExtract.Services
 			var currentXml = FileHelper.NoTouchReadFile(luaScript.VehicleXmlPath);
 
 			// Backup
-			if (!BackupFileHelper.BackupFile(currentXml, luaScript.VehicleName))
+			if (!BackupFileHelper.BackupFile(currentXml, luaScript.VehicleXmlFileName))
 				return;
 
 			processedScript = WebUtility.HtmlEncode(processedScript);

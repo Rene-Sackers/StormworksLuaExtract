@@ -2,9 +2,14 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<TargetFramework>netcoreapp3.0</TargetFramework>
+		<PublishTrimmed>true</PublishTrimmed>
+		<PublishReadyToRun>false</PublishReadyToRun>
+		<PublishSingleFile>true</PublishSingleFile>
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
 		<LangVersion>7.3</LangVersion>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<PublishTrimmed>true</PublishTrimmed>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -38,4 +38,4 @@ As of v0.0.3, any changes you make in the editor are also reflected to the local
 
 Thanks to [Mathias Bynens](https://github.com/mathiasbynens) for his [Lua minifier](https://github.com/mathiasbynens/mothereff.in/tree/master/lua-minifier), couldn't have done the minification without it.
 
-[![Build Status](https://dev.azure.com/renesackers/StormworksLuaExtract/_apis/build/repos/git/badge?api-version=5.0-preview.2&branchName=master)](https://dev.azure.com/renesackers/StormworksLuaExtract)
+[![Build Status](https://dev.azure.com/renesackers/StormworksLuaExtract/_apis/build/status/Rene-Sackers.StormworksLuaExtract?branchName=master)](https://dev.azure.com/renesackers/StormworksLuaExtract/_build/latest?definitionId=4&branchName=master)

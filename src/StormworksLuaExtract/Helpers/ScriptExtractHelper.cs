@@ -56,7 +56,7 @@ namespace StormworksLuaExtract.Helpers
 
 		private static string GetLuaFilePath(string vehicleXmlFilePath, string microcontrollerName, string scriptObjectId)
 		{
-			var vehicleName = Path.GetFileName(vehicleXmlFilePath);
+			var vehicleName = Path.GetFileNameWithoutExtension(vehicleXmlFilePath);
 			return Path.Combine(Statics.LocalEditDirectory, vehicleName, FileHelper.SanitizeFileName(microcontrollerName), scriptObjectId, "script.lua");
 		}
 	}

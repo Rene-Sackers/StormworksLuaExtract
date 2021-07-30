@@ -8,7 +8,7 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<LangVersion>7.3</LangVersion>
-		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<PublishTrimmed>true</PublishTrimmed>
 	</PropertyGroup>
 

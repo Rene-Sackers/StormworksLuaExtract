@@ -1,0 +1,46 @@
+name: dotnet publish
+
+on:
+  push:
+    tags:
+      - 'v*.*'
+
+jobs:
+  build:
+    if: github.event.base_ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Get version number
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      
+      - name: Setup .NET Core SDK 5.0.x
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Restore nuget from cache
+        uses: actions/cache@v2
+        id: nuget
+        with:
+          path: |
+            ~/.nuget/packages
+            src/StormworksLuaExtract/**/obj/**
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget
+
+      - name: Restore nuget
+        if: steps.nuget.outputs.cache-hit != 'true'
+        run: dotnet restore ./src/StormworksServer
+        
+      - name: Publish
+        run: dotnet publish ./src/StormworksLuaExtract/StormworksLuaExtract.csproj -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true -c Release -o ./Publish --no-restore
+
+      - name: Upload release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: './Publish/StormworksLuaExtract.exe'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

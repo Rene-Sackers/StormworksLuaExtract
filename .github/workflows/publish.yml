@@ -33,7 +33,7 @@ jobs:
 
       - name: Restore nuget
         if: steps.nuget.outputs.cache-hit != 'true'
-        run: dotnet restore ./src/StormworksServer
+        run: dotnet restore ./src/StormworksLuaExtract
         
       - name: Publish
         run: dotnet publish ./src/StormworksLuaExtract/StormworksLuaExtract.csproj -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true --self-contained true -c Release -o ./Publish --no-restore

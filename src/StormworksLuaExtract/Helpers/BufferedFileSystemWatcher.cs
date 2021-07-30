@@ -20,7 +20,7 @@ namespace StormworksLuaExtract.Helpers
 
 		public BufferedFileSystemWatcher(string path, string filter, int bufferTimeInMilliseconds = DefaultBUfferTime)
 		{
-			_watcher = new FileSystemWatcher(path, filter);
+			_watcher = new FileSystemWatcher(path, filter) {IncludeSubdirectories = true};
 			_watcher.Changed += WatcherEvent;
 			_watcher.Created += WatcherEvent;
 			_watcher.Deleted += WatcherEvent;

@@ -34,6 +34,8 @@ namespace StormworksLuaExtract.Services
 				if (!BackupFileHelper.BackupFile(currentLocalScript, luaScript.MinifiedLuaFileName))
 					return false;
 			}
+
+			Directory.CreateDirectory(Path.GetDirectoryName(luaScript.LuaFilePath));
 			
 			FileHelper.TryWriteFile(luaScript.LuaFilePath, vehicleXmlScript);
 			FileHelper.TryWriteFile(luaScript.MinifiedLuaPath, vehicleXmlScript);

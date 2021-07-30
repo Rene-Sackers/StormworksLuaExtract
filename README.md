@@ -34,8 +34,9 @@ In game, you'll have to re-load the vehicle in the editor to load its new script
 
 As of v0.0.3, any changes you make in the editor are also reflected to the local .lua files. This includes adding, deleting and modifying Lua scripts.
 
+## Intellisense
+To get full intellisense, take a look at [Stormworks Lua Docs Gen](https://github.com/Rene-Sackers/StormworksLuaDocsGen).
+
 ## Thanks
 
 Thanks to [Mathias Bynens](https://github.com/mathiasbynens) for his [Lua minifier](https://github.com/mathiasbynens/mothereff.in/tree/master/lua-minifier), couldn't have done the minification without it.
-
-[![Build Status](https://dev.azure.com/renesackers/StormworksLuaExtract/_apis/build/status/Rene-Sackers.StormworksLuaExtract?branchName=master)](https://dev.azure.com/renesackers/StormworksLuaExtract/_build/latest?definitionId=4&branchName=master)
